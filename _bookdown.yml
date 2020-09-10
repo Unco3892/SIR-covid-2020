@@ -1,0 +1,13 @@
+book_filename: "SIR-covid-2020"
+
+before_chapter_script: "scripts/setup.R"
+
+# new_session: yes
+
+rmd_files: [
+  "index.Rmd",
+  "report/eda.Rmd",
+  "report/swiss_model.Rmd",
+  "report/many_models.Rmd",
+  "report/references.Rmd"
+]

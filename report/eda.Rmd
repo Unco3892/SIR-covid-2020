@@ -1,0 +1,753 @@
+# Exploratory data analysis
+
+## Description of the state of the spread
+
+We fisrt provide a high level description of the state of the spread. In particular, including the:
+
+  * the number of days that have passed since the first confirmed case/death,
+  * the current stage for confirmed cases/deaths/mortality (i.e., ratio of deaths to confirmed cases).
+  
+*Note*: Please do note that most of the plots in this section, as well as some of the final plots in the the "many models" section, are interactive, hence, in order to see the built-in legend(for each country) you would have to scroll over the lines/bars.
+
+```{r, fig.height=5, warning=FALSE, out.height="50%"}
+#EVOLUTION OF CASES PER COUNTRY IN ABSOLUTE VALUES
+a <- covid19_data %>%
+  group_by(country) %>%
+  select(country, date, confirmed, deaths, region) %>%
+  ggplot(aes(x = date, y = confirmed, colour = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      color = "black",
+      size = 8,
+      angle = 90
+    ),
+    axis.title.y = element_text(size = 9),
+    plot.title = element_text(size = 10, hjust = 0.5)
+  ) +
+  labs(
+    title = str_wrap("Evolution of the Confirmed Cases per Country in Absolute Values"),
+    x = "",
+    y = ""
+  ) +
+  scale_y_continuous(label = comma)
+
+ggplotly(a) %>%
+  layout(autosize = T) %>%
+  config(displayModeBar = F)
+
+#EVOLUTION OF DEATHS PER COUNTRY IN ABSOLUTE VALUES
+b <- covid19_data %>%
+  group_by(country) %>%
+  select(country, date, deaths, region) %>%
+  ggplot(aes(x = date, y = deaths, colour = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(
+      color = "black",
+      size = 8,
+      angle = 90
+    ),
+    axis.title.y = element_text(size = 9)
+  ) +
+  labs(
+    title = str_wrap("Evolution of the Deaths per Country in Absolute Values"),
+    x = "",
+    y = ""
+  ) +
+  scale_y_continuous(label = comma)
+
+ggplotly(b) %>%
+  layout(autosize = T) %>%
+  config(displayModeBar = F)
+
+#EVOLUTION OF CASES PER COUNTRY IN PERCENTAGE OF THE POPULATION
+c <- covid19_data %>%
+  group_by(country) %>%
+  mutate(perc = confirmed / population) %>%
+  select(country, date, perc, deaths, region) %>%
+  ggplot(aes(x = date, y = perc, colour = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(
+      color = "black",
+      size = 8,
+      angle = 90
+    ),
+    axis.title.y = element_text(size = 9)
+  ) +
+  labs(
+    title = str_wrap(
+      "Evolution of the Percentage of Confirmed Cases relative the Population of countries",
+      width = 50
+    ),
+    x = "",
+    y = ""
+  ) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = .1))
+
+ggplotly(c) %>%
+  layout(autosize = T) %>%
+  config(displayModeBar = F)
+
+#EVOLUTION OF DEATHS PER COUNTRY IN PERCENTAGE OF THE POPULATION
+d <- covid19_data %>%
+  group_by(country) %>%
+  mutate(perc = deaths / population) %>%
+  select(country, date, perc, region) %>%
+  ggplot(aes(x = date, y = perc, colour = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(
+      color = "black",
+      size = 8,
+      angle = 90
+    ),
+    axis.title.y = element_text(size = 9)
+  ) +
+  labs(
+    title = str_wrap(
+      "Evolution of the Percentage of Deaths relative to the Population of Countries"
+    ),
+    x = "",
+    y = ""
+  ) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = .001))
+ggplotly(d) %>%
+  layout(autosize = T) %>%
+  config(displayModeBar = F)
+```
+
+**Comment**: Most of the current news is based on the absolute values of the confirmed cases and deaths per country, therefore we have decided to start our analysis by plotting them. However, since the sizes of the countries can differ quite a lot, we thought that it was best to have a look at the confirmed cases and deaths per country relative to their population to build a better picture. </p>
+We can see that by taking their size into account, the situation for some countries changes, more specifically we can see that the curve for the countries in the region of East Asia and Pacific is flatter when taking into account the size of the population, same for North America, while, on the other hand, the curves for countries in Europe and Central Asia are way steeper. This makes sense as, generally, countries in Europe are smaller, therefore a high absolute value would mean a higher percentage of the population, while in North America and Asia, where the countries have larger populations, the absolute values will correspond to a lower percentage. </p>
+What is evident is that for both confirmed cases and deaths, the situation that is the most worrying is the one in Europe and Central Asia. It is perhaps more interesting to zoom on this area to gain a better understanding. </p>
+
+```{r, fig.height= 8, warning=FALSE, out.height="50%"}
+#ZOOM ON THE EUROPE AND CENTRAL ASIA
+e <- covid19_data %>%
+  group_by(country) %>%
+  filter(region == "Europe & Central Asia") %>%
+  mutate(perc = confirmed / population) %>%
+  select(country, date, perc, region) %>%
+  ggplot(aes(x = date, y = perc, colour = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    legend.position = "none",
+    legend.spacing.x = unit(2.2, 'cm'),
+    plot.title = element_text(
+      size = 10,
+      hjust = 0.5,
+      vjust = 1
+    ),
+    axis.text.x = element_text(face = "bold"),
+    axis.text.y = element_text(face = "bold"),
+    axis.title.x = element_blank()
+  ) +
+  labs(
+    title = str_wrap(
+      "Evolution of the Percentage of Confirmed Cases relative to the Population of countries in Europe and Central Asia",
+      45
+    ),
+    y = ""
+  ) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = .1))
+
+ggplotly(e) %>%
+  layout(autosize = T) %>%
+  config(displayModeBar = F)
+```
+
+***
+
+```{r}
+options(scipen = 999)
+covid19_data %>%
+  filter(region == "Europe & Central Asia") %>%
+  group_by(country) %>%
+  select(country, population) %>%
+  filter(row_number() == 1) %>%
+  arrange(population) %>%
+  kable(format.args = list(big.mark = ",")) %>%
+  add_header_above(
+    header = c(
+      "The Population per Country in Europe and Central Asia (from smallest to largest)",
+      ""
+    )
+  ) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  scroll_box(width = "100%", height = "250px")
+```
+
+**Comment**: Once we focus on Europe and Central Asia, we can notice that the countries with the highest increase are San Marino, Andorra and Luxembourg. As we can see from the table, for the three countries, the population does not exceed a milion people, hence they are fairly small countries. Consequently, as we mentioned already before, this means that the emergence of every new case corresponds to a bigger increase of the percentage of the affected population, which is larger relative to the countries with larger populations. </p>
+
+After looking at Europe and Central Asia, we can move on to analyze the current situation for all the countries in the world.
+
+```{r}
+#CURRENT NUMBER OF CASES PER COUNTRY IN ABSOLUTE VALUES
+#TABLE
+covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n()) %>%
+  select(country, confirmed) %>%
+  arrange(desc(confirmed)) %>%
+  kable(format.args = list(big.mark = ",")) %>%
+  add_header_above(c("Confirmed Cases per Country in Absolute Values", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%", height = "250px")
+```
+
+***
+
+```{r}
+#CURRENT NUMBER OF CASES PER COUNTRY IN PERCENTAGE OF THE POPULATION
+#TABLE
+covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n()) %>%
+  mutate(perc = scales::percent(confirmed / population, accuracy = 0.01)) %>%
+  select(country, perc) %>%
+  arrange(desc(perc)) %>%
+  kable(col.names = c("country", "% Confirmed")) %>%
+  add_header_above(c("Confirmed Cases per Country in Percentage", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%", height = "250px")
+```
+
+***
+
+```{r}
+#CURRENT NUMBER OF CASES PER COUNTRY IN PERCENTAGE OF THE POPULATION
+#PLOT
+covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n()) %>%
+  mutate(perc = confirmed / population) %>%
+  arrange(desc(perc)) %>%
+  head(10) %>%
+  ggplot(aes(
+    x = fct_reorder(country, perc),
+    y = perc,
+    fill = country
+  )) +
+  geom_col() +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, size = 8, face = "bold"),
+    axis.title.y = element_text(size = 9)
+  ) +
+  labs(
+    title = str_wrap(
+      "Top 10 Current Number of Confirmed Cases per Country in Population Percentage"
+    ),
+    x = "",
+    y = ""
+  ) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = .1))
+```
+
+***
+
+```{r}
+#CURRENT NUMBER OF CASES PER COUNTRY IN ABSOLUTE VALUES
+#PLOT
+covid19_data %>%
+  group_by(country, region) %>%
+  filter(confirmed > 0) %>%
+  filter(row_number() == n()) %>%
+  arrange(desc(confirmed))  %>%
+  ungroup() %>%
+  filter(row_number() < 11) %>%
+  ggplot(aes(
+    x = fct_reorder(country, confirmed),
+    y = confirmed,
+    fill = country
+  )) +
+  geom_col() +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, size = 8, face = "bold"),
+    axis.title.y = element_text(size = 9)
+  ) +
+  labs(title = "Top 10 Current Number of Confirmed Cases per Country in Absolute Values", x = "", y = "") +
+  scale_y_continuous(label = comma)
+```
+
+**Comment**: Thanks to these graphs (showing only the countries with the 10 highest percentage and absolute values in terms of confirmed cases) and the tables (showing all the countries), we can see that actually the situation changes quite a lot if we consider the percentage of the population or the absoulte values. In any case, as to `r latest_data`, we can see that, in absoulte values, the countries with the most confirmed cases are the USA, Spain and Italy, while in percentage the oustanding ones are San Marino and Andorra. Again, this is probably due to the difference in size of these countries. The USA are especially outstanding with regards to the number of confirmed cases, which is somehow a confirm of the news we hear everyday, and the fact that their president didn't take the situation very seriously from the beginning. 
+
+
+```{r}
+#CURRENT NUMBER OF DEATHS PER COUNTRY IN ABSOLUTE VALUES
+#TABLE
+covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n()) %>%
+  select(country, deaths) %>%
+  arrange(desc(deaths)) %>%
+  kable(format.args = list(big.mark = ",")) %>%
+  add_header_above(c("Deaths per Country (in descending order)", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%", height = "250px")
+```
+
+***
+
+```{r}
+#CURRENT NUMBER OF DEATHS PER COUNTRY IN PERCENTAGE OF THE POPULATION
+#TABLE
+covid19_data %>%
+  group_by(country) %>%
+  mutate(perc = scales::percent(deaths / population, accuracy = 0.001)) %>%
+  filter(row_number() == n()) %>%
+  arrange(desc(perc)) %>%
+  select(country, perc) %>%
+  kable(col.names = c("country", "% deaths")) %>%
+  add_header_above(c("Deaths per Country relative to the population", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>% scroll_box(width = "100%", height = "250px")
+```
+
+***
+
+```{r}
+#CURRENT NUMBER OF DEATHS PER COUNTRY IN ABSOLUTE VALUES 
+#PLOT
+covid19_data %>% 
+  group_by(country) %>% 
+  filter(row_number()==n()) %>% 
+  arrange(desc(deaths)) %>% 
+  ungroup() %>% 
+  filter(row_number() < 11) %>% 
+  ggplot(aes(x = fct_reorder(country, deaths), y =deaths, fill = country)) + 
+  geom_col() +
+  theme_light()+
+  theme( plot.title = element_text(size= 10, hjust = 0.5),legend.position = "none", axis.text.x = element_text(angle = 90, size = 8, face= "bold"),axis.title.y = element_text(size=9)) + 
+  labs(title = str_wrap("Countries with Top 10 Current Number of Deaths due to COVID-19 in Absolute Values"), x = "", y = "")+
+  scale_y_continuous(label=comma)
+```
+
+***
+
+```{r}
+#CURRENT NUMBER OF DEATHS PER COUNTRY IN PERCENTAGE OF THE POPULATION   
+#PLOT
+covid19_data %>% 
+  group_by(country, region) %>% 
+  mutate(perc= deaths / population) %>% 
+  filter(row_number()==n()) %>% 
+  arrange(desc(perc)) %>% 
+  ungroup() %>% 
+  filter(row_number() < 11) %>% 
+  ggplot(aes(x = fct_reorder(country, perc), y =perc, fill = country)) + 
+  geom_col() + 
+  theme_light()+
+  theme( plot.title = element_text(size= 10, hjust = 0.5), legend.position = "none", axis.text.x = element_text(angle = 90, size = 8, face= "bold"),axis.title.y = element_text(size=9)) + 
+  labs(title = str_wrap("Countries with Top 10 Current Number of Deaths due to COVID-19 in Percentage of Country Population"), x = "", y = "") +
+  scale_y_continuous(labels = scales::percent_format(accuracy=.001))
+```
+
+**Comment**: The situation of the deaths due to COVID-19 is a little bit different from the one of the confirmed cases. The country with the most deaths in absoulte values is Italy, followed by Spain and the USA, while in percentage the highest value is the one of San Marino, followed not very closely by Spain and Italy. This indicates that the fatality of the COVID-19 has been severe in both Italy and Spain which has caused both countries to have very high values boths in absolute terms as well as relative to their populations, while for San Marino the worrying high value is again mainly due to the fact that the country is really small and it has a small population (33671 inhabitants and 266 deaths due to COVID-19 as to `r latest_data`).
+
+Now we look at the percentage of deaths over the confirmed cases per country. 
+
+```{r}
+#RATIO OF DEATHS/CASES PER COUNTRY 
+covid19_data %>%
+  group_by(country) %>% 
+  filter(row_number()==n()) %>% 
+  mutate(ratio = (deaths)/(confirmed)) %>% 
+  select(country,ratio) %>% 
+  arrange(desc(ratio)) %>% 
+  kable() %>% 
+  add_header_above(c("Ratio of Deaths/Cases per Country","")) %>% 
+  kable_styling(bootstrap_options = "striped") %>% 
+  scroll_box(width = "100%", height = "250px")
+```
+
+***
+
+```{r}
+covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n()) %>%
+  mutate(Ratio = (deaths) / (confirmed)) %>%
+  select(Ratio, country) %>%
+  arrange(desc(Ratio)) %>%
+  ungroup() %>%
+  filter(row_number() < 10) %>%
+  ggplot(aes(
+    x = fct_reorder(country, Ratio),
+    y = Ratio,
+    fill = country
+  )) +
+  geom_col() +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, size = 8, face = "bold")
+  ) +
+  labs(
+    title = str_wrap("Top 10 Country Ratio of Deaths / Confirmed Cases of COVID-19"),
+    axis.title.y = element_text(size = 9),
+    x = "",
+    y = ""
+  )
+```
+
+
+**Comment**: The countries with the highest percantage are Gambia and Liberia, these values are mainly due to the fact that there are only 4 and 13 cases of COVID-19 respectively, as to `r latest_data`, so, following the same reasoning as before, an increase of one victim here means a high increase in the ration of percentage over the confirmed cases.  This opens an interesting discussion of whether this ratio is related to the GDP (a way to measure how rich the country is) or not. That is why we decided to plot the gdp against this ratio to see if there is any kind of correlation between the two variables. 
+
+```{r}
+covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n()) %>%
+  mutate(Ratio = (deaths) / (confirmed)) %>%
+  select(Ratio, country, gdp_capita, region) %>%
+  arrange(desc(Ratio)) %>%
+  ungroup() %>%
+  ggplot(aes(x = gdp_capita, y = Ratio)) +
+  geom_point(aes(color = region)) +
+  theme(plot.title = element_text(size = 10, hjust = 0.5),
+        legend.position = "none") +
+  labs(title = "Ratio of Deaths / Confirmed Cases of COVID-19 per Country GDP per Capita", x = "GDP per Capita", y = "Deaths due to COVID-19 / Confirmed Cases") +
+  geom_smooth(method = "lm", se = F, col = "red")
+```
+
+**Comment**: This economic indicator could be a proxy for the ability of the country to afford the medical emergence and to have a state-of-the-art healthcare system so that they are ready to deal with the alarming situation. However, it is not the only thing to take into account, the size of the country and the regulations taken by the government have also an impact (as we have seen earlier). As we can see here, it is not always the case to have a correlation between GDP and the ratio of deaths due to COVID-19 and the number over the confirmed cases.
+<p> 
+We then decided to look at the evolution of the expansion of the virus, by considering the first confirmed case and the first death due to COVID-19 per country. 
+
+```{r}
+covid19_data %>%
+  group_by(country) %>%
+  filter(confirmed == 1) %>%
+  filter(row_number() == 1) %>%
+  arrange(date) %>%
+  select(date, country, region) %>%
+  arrange(region, date) %>%
+  kable() %>%
+  add_header_above(c("Timeline of First Case per Country", "", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  scroll_box(width = "100%", height = "250px")
+```
+
+*Note*: Please note as the dataset has the first recording for China starting from 22/01/2020, **this is far away from the reality as the first cases were already announced in December**, hence the first Chinese confirmed case is not found the dataset and we have decided for the integrity of our exploratory analysis to ignore it. The same holds for countries such as Japan and Thailand who on the 22nd of January had 2 confirmed cases and not only 1, however, this may be because there were 2 people diagnosed at once or it is an accumulation over time however for simplicity we assumed the latter. </p>
+
+**Comment**:Considering only the countries for which we have the first confirmed case, the first country to have had a confirmed case of COVID-19 is, surprisingly, the US, the 22nd of January, and the day after Singapore, which is probably due to the high economic and business exchange with the other Asian countries. As we can see, the first countries were mainly in the South-Easth Asia, North America and some countries in Europe. Interestingly, we can notice a sort of temporary void before the real boom of the virus, between the first days of February and mid-February. This could be probably due to the fact that the coutries had to develop a way to test the virus, plus, once it started to spread it has been hard to stop, so once some countries started to confirm the first case, the closest countries were quick to follow. The latest to confirm the first case of the virus has been South Sudan on the 2020-04-05. 
+
+***
+
+```{r}
+covid19_data %>%
+  group_by(country) %>%
+  filter(deaths == 1) %>%
+  filter(row_number() == 1) %>%
+  arrange(date) %>%
+  select(date, country, region) %>%
+  arrange(date) %>%
+  kable() %>%
+  add_header_above(c("Timeline of First Death due to COVID-19 per Country", "", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  scroll_box(width = "100%", height = "250px")
+``` 
+
+**Comment**: Regarding the first death due to COVID-19, the first country (again not considering China) announcing the first fatality due to the virus is on the 2020-02-02 in the Philippines, followed more than 10 days after by Japan and then France. Here the void between the countries, especially before March, is even more evident, and we can see that in March there is an exponential increase of the first deaths due to the virus. In general, the countries with the first fatalities are in the East Asia and Pacific area, with the exception of France. 
+<p> 
+Following, the graph of the number of days since the first confirmed case and first fatality due to COVID-19 per country.
+
+```{r,warning=FALSE}
+#NUMBER OF DAYS SINCE FIRST CASE PER COUNTRY
+start_confirmed <-
+  covid19_data %>%
+  group_by(country) %>%
+  filter(confirmed >= 1) %>%
+  filter(row_number() == 1)
+
+end_confirmed <-
+  covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n())
+
+diff_confirmed <-
+  left_join(start_confirmed, end_confirmed, by = "country") %>%
+  mutate(diff = date.y - date.x) %>%
+  select(country, diff)
+
+#GRAPH
+diff_confirmed %>%
+  arrange(desc(diff)) %>%
+  ungroup() %>%
+  filter(row_number() < 21) %>%
+  ggplot(aes(x = fct_reorder(country, diff), y = diff)) +
+  geom_col(aes(fill = country)) +
+  geom_text(aes(label = diff), vjust = -0.1) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90)
+  ) +
+  labs(title = "Top 20 Countries by Number of Days since First Confirmed Case", x = "", y = "Days")
+```
+
+***
+
+```{r}
+#TABLE
+diff_confirmed %>%
+  arrange(desc(diff)) %>%
+  kable(col.names = c("country", "days passed")) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  add_header_above(c("Number of days since the first confirmed case", "")) %>%
+  scroll_box(width = "100%", height = "250px")
+```
+
+***
+
+```{r, warning=FALSE}
+start_death <-
+  covid19_data %>%
+  group_by(country) %>%
+  filter(deaths >= 1) %>%
+  filter(row_number() == 1)
+
+end_death <-
+  covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == n())
+
+diff_death <-
+  left_join(start_death, end_death, by = "country") %>%
+  mutate(diff = date.y - date.x) %>%
+  select(country, diff)
+
+diff_death %>%
+  arrange(desc(diff)) %>%
+  ungroup() %>%
+  filter(row_number() < 21) %>%
+  ggplot(aes(x = fct_reorder(country, diff), y = diff)) +
+  geom_col(aes(fill = country)) +
+  geom_text(aes(label = diff), vjust = -0.1) +
+  theme_light() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0.5),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90)
+  ) +
+  labs(title = "Number of Days since First Fatality due to COVID-19 per Country", x = "", y = "Days")
+```
+
+***
+
+```{r}
+#TABLE
+diff_death %>%
+  arrange(desc(diff)) %>%
+  kable(col.names = c("country", "days passed")) %>%
+  add_header_above(c("Number of days since the first death", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  scroll_box(width = "100%", height = "250px")
+```
+
+**Comment**: From the tables above, wan see that the countries that have had the first case of COVID-19 confirmed were the USA and South Korea, and interestingly, as we already saw before, there is a gap between Belgium and Egypt of 10 days and onther one of almost a week between Beligum and Lebanon, and from then on the spread has been increasing exponentially. In general, these graphs and tables are just a confirmation of what we have seen before.
+
+## Worldwide map
+
+We then produce a worlwide map of the __COVID-19__ spread at the latest date available in `covid19_data` for each country, and describe what we see.
+
+We will use the `ggplot2` package particularly two useful commands of
+
+  * `map_data()` to retrieve a map,
+  * and `geom_map()` to draw a map on a plot.
+  
+We then use `expand_limits` to make sure we display the whole map of the world.
+
+```{r, fig.width= 6, fig.asp = 1.2}
+world_map <- map_data("world") %>%
+  mutate(country = region)
+
+COVID.map <-
+  left_join(end_confirmed, world_map, by = "country")
+
+# First map
+map_1 <- ggplot(COVID.map, aes(long, lat, group = group)) +
+  geom_polygon(aes(fill = confirmed), color = "white", size = 0.1) +
+  scale_fill_viridis_c(option = "C", label = scales::comma) +
+  theme_light() +
+  labs(
+    title = str_wrap(
+      "World Map of COVID-19 cases on May the 5th 2020 in Absolute Values",
+      width = 40
+    ),
+    fill = str_wrap("Number of Confirmed Cases", width = 15)
+  ) +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(
+      color = "Black",
+      size = 11,
+      face = "bold",
+      hjust = 0.5
+    ),
+    axis.title = element_blank()
+  ) +
+  scale_x_continuous(labels = NULL) +
+  scale_y_continuous(labels = NULL)
+
+end_confirmed %<>% mutate(perc = confirmed / population)
+COVIDperc.map <-
+  left_join(end_confirmed, world_map, by = "country")
+
+# Second map
+map_2 <- ggplot(COVIDperc.map, aes(long, lat, group = group)) +
+  geom_polygon(aes(fill = perc), color = "white", size = 0.1) +
+  theme_light() +
+  scale_fill_viridis_c(option = "C",
+                       labels = scales::percent_format(accuracy = .1)) +
+  labs(
+    title = str_wrap(
+      "World Map of COVID-19 cases on May the 5th 2020 as % of Population",
+      width = 40
+    ),
+    fill = str_wrap("Percentage of Confirmed Cases", width = 15)
+  ) +
+  theme(
+    legend.position = "right",
+    plot.title = element_text(
+      color = "Black",
+      size = 11,
+      face = "bold",
+      hjust = 0.5
+    ),
+    axis.title = element_blank()
+  ) +
+  scale_x_continuous(labels = NULL) +
+  scale_y_continuous(labels = NULL)
+
+grid.arrange(map_1, map_2, ncol = 1)
+```
+
+**Comment**: We can see that the countries with the most cases are the USA, Spain and Italy (warmer colors), in absolute values. In percentage the highest values are still in Europe, (Island, Spain, Switzerland and Italy are the one the warmest colors). This is perfectly in line with what we have seen up to now. 
+
+## Data selection and alignment
+
+
+To compare the speed of the infection spread between countries, we need to "align" the data. In other words, we model the epidemic using equivalent "starting conditions" for every country. To do that, we filter the data so that the number of confirmed cases (in any country) is greater or equal to the maximal number of confirmed cases at the first day of a specific country. 
+
+Let $C_{d, i}$ be the number of accumulated confirmed cases on day $d$ for country $i$. Let country $k$ be the one such that it had the highest number of reported cases on the first day in the dataset, that is $C_{1, k} \geq C_{1, i}$ for any other $i$. Find $k$ and discuss.
+
+From `covid19_data`, extract a new table `covid19_data_filtered`:
+
+* Select only the countries $i$, which on some day $d_{0,i}$ have $C_{d_{0,i}, i} \geq C_{0, k}$. We will call this time $d_{0,i}$ a day-zero for country $i$. In the next sections, we model $C_i(t) = C_{d_{0,i} + t,i}$, that is the spread of the epidemic in country $i$ with $t$ representing "event days". Remember, for every country the day-zero is, in general, different. However, when a country entered the epidemic stage, we are only interested in number of days that has passed from the date of entry (i.e. day-zero).
+* First, we remove countries who are left with less than two weeks of data, i.e. we keep those countries whose number of days that has passed from the day-zero of this country is 14 or more. 
+* Then we create a new column called `t` representing the number of days from the day-zero of this country.
+* Finally, we create a new column called `confirmed_1e5pop` representing the number of confirmed cases per 100,000 habitants. This is useful in order to compare how the spread of the epidemic differs between countries relative to their population.
+
+Furthermore, we will aim to answer the following three questions: 
+
+* Which countries are left in `covid19_data_filtered`?
+* What is the state of the spread there?
+* What is the relationship between `t` and `confirmed_1e5pop`?
+
+```{r}
+China <- covid19_data %>%
+  group_by(country) %>%
+  filter(row_number() == 1) %>%
+  arrange(desc(confirmed)) %>%
+  ungroup() %>%
+  filter(row_number() == 1) 
+```
+
+**Comment**:
+K is `r China$country`, with `r China$confirmed` cases, `r China$deaths` deaths on the `r China$date`. 
+
+```{r, fig.width=12, results="hide"}
+covid19_data_filtered <-
+  covid19_data %>%
+  group_by(country) %>%
+  filter(confirmed >= 548) %>%
+  mutate(days = max(row_number())) %>%
+  filter(days >= 14) %>%
+  mutate(t = row_number(),
+         confirmed_1e5pop = ((confirmed / population) * 100000))
+
+covid19_data %>%
+  group_by(country) %>%
+  filter(confirmed >= 548) %>%
+  mutate(days = max(row_number())) %>%
+  filter(days >= 14) %>%
+  mutate(t = row_number(),
+         confirmed_1e5pop = ((confirmed / population) * 100000))
+```
+
+**Comment**: The countries left in `covid19_data_filtered` are `r unique(covid19_data_filtered$country)`.
+
+```{r, warning=FALSE,out.height="50%"}
+covid19_data_filtered %>%
+  filter(row_number() == 1) %>%
+  arrange(date) %>%
+  select(country, date) %>%
+  kable() %>%
+  add_header_above(c("Date in Which Countries Entered an Epidemic Situation", "")) %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  scroll_box(width = "100%", height = "250px")
+
+f <- covid19_data_filtered %>%
+  ggplot(aes(x = date, y = confirmed, col = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 10, hjust = 0.5),
+    axis.text.x = element_text(face = "bold"),
+    axis.text.y = element_text(face = "bold")
+  ) +
+  labs(
+    title = str_wrap("Evolution of Epidemy in Countries Based on China"),
+    x = "",
+    y = "Confirmed Cases"
+  )
+
+ggplotly(f) %>%
+  config(displayModeBar = F)
+```
+
+**Comment**: We can see which countries were the first ones to reach China's situation; South Korea the 23rd February (almost a month after China), Italy the 27th February and Iran the 29th of February. The evolution of the situation in the countries that reached the state of China is given by the graph above. One of the biggest concerns is the situation in the US that seems to be growing exponentially and having no intention to slow, while in China the curve has flattened a lot following the regulations introduced by the government. Nevertheless, we do have to mention that the potential lack of transparency by the Chinese government could also explain this flat curve which falls beyond the scope of this analysis. 
+
+
+```{r, warning=FALSE, out.height="50%"}
+g <- covid19_data_filtered %>%
+  ggplot(aes(t, confirmed_1e5pop, col = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 10, hjust = 0.5),
+    axis.text.x = element_text(face = "bold"),
+    axis.text.y = element_text(face = "bold")
+  ) +
+  labs(
+    title = str_wrap(
+      "Relationship Between t and the Confirmed Cases/100'000 inhabitants"
+    ),
+    x = "t",
+    y = "100k inhabitants"
+  )
+
+ggplotly(g) %>%
+  config(displayModeBar = F)
+```
+
+**Comment**: We can see that these two variables are positively correlated with one another, especially for Luxembourg and Iceland, while, on the other hand, for China is not at all the case. However, this make sense, since China is the reference country and it was already in the epidemic situation and was the first to take measurement to stop the expansion of the healthcase crisis.

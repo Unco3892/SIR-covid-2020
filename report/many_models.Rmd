@@ -1,0 +1,296 @@
+# Modeling the spread of COVID-19 worldwide
+
+In this section, we fit the logistic model to every country in the `covid19_data_filtered` dataset.
+
+## Fitting the logistic model to every country
+
+Here we make use of the nested data, list-columns and `logistic_model` to fit the logistic model to every country in the dataset.
+Because, for some countries, the optimization method might not converge, we will use the `possibly()` function to see which ones fail and which ones succeed.
+Now one may wonder, for which country does the optimization fail ?
+
+First, let's fit the logistic model to every country and have a look at which one are not converging. 
+```{r, warning=FALSE}
+country_nested <- covid19_data_filtered %>%
+  group_by(country) %>%
+  nest()
+
+country_nested %<>% mutate(model = purrr::map(data, possibly(logistic_model, NA_real_)))
+```
+
+The countries for which the optimization fails are the following: 
+
+```{r}
+# Countries for which the optimization fails
+failure <- country_nested %>%
+  filter(model == "NA") %>%
+  select(country)
+```
+`r failure$country`
+
+
+We will also assess the goodness-of-fit of the logistic model in the various countries. Lets plot the residuals per country to have a look at the general trend of the residual in the model. 
+```{r, warning=FALSE}
+country_nested %<>%
+  filter(!model == "NA") %>%
+  mutate(resids = purrr::map2(data, model, add_residuals))
+
+resids <- unnest(country_nested, resids, .drop = TRUE)
+
+resids %>%
+  ggplot(aes(date, resid)) +
+  geom_line(aes(group = country), alpha = 1 / 3) +
+  geom_smooth(se = FALSE) +
+  labs(
+    title = str_wrap("Residuals of logistic_model in General"),
+    x = "",
+    y = ""
+  ) +
+  theme(plot.title = element_text(size = 10, hjust = 0.5))
+```
+
+**Comment**: As we can see, the residuals seem to be quite close to zero, especially towards the end of the timeline (end of March, beginning of April), while at the beginning we can see some more distance from zero (given by the fact that the only country present in the dataset at that time is China, being the only one already in an epidemic situation). From the moment in which more countries join the dataset, we can see that the accuracy of the model increase, hence the residuals decrease and are closer to zero. 
+</p>
+Let's plot the residual per country to have a better look, and then we will zoom on the countries with the highest values of the residuals (meaning that they are the ones for which the model has a lower accuracy in the predictions). 
+
+```{r, fig.height=15, fig.asp=1.5, warning=FALSE}
+resids %>%
+  ggplot(aes(date, resid)) +
+  geom_line(alpha = 1 / 3) +
+  facet_wrap( ~ fct_reorder(country, resid),
+              ncol = 4,
+              scales = "free") +
+  theme_light() +
+  theme(
+    axis.text.x = element_text(angle = 90, size = 6),
+    axis.text.y = element_text(size = 6),
+    plot.title = element_text(
+      size = 10,
+      hjust = 0.5,
+      vjust = 0.5
+    )
+  ) +
+  labs(title = str_wrap(
+    "Residuals of logistic_model per Country (with Adjusted Scales per Country)"
+  ))
+```
+*Note:* The axis are for this graph `Residual of logistic_model per country` and the one below has been adjusted for each country in order to be able to see better the different distributions.
+
+```{r}
+#COUNTRIES HIGHEST VARIATION IN RESIDUALS
+resids %>%
+  group_by(country) %>%
+  filter(resid > 1000) %>%
+  ggplot(aes(date, resid, color = country)) +
+  geom_line() +
+  labs(
+    title = str_wrap(
+      "Zoom on the Countries With Higher Variation in Residuals of logistic_model with Adjusted Axis per Country"
+    ),
+    x = "",
+    y = "Residuals",
+    color = "Country"
+  ) +
+  theme(plot.title = element_text(size = 10, hjust = 0.5))
+```
+
+**Comment**: As we can see the countries for which the model has the highest values for the residuals are China, France, Germany, Iran, Italy, South Korea, Spain and the USA. This does not come as a susprise, actually, since in the EDA part of our analysis, we have seen that they are the countries with the highest exponentiality in terms of absolute values of the confirmed cases (especially the US), while for China, as already mentioned, the residuals are higher at the beginning of the timeline, being the only country in the dataset, since we are considering only the countries in an epidemic situation. 
+</p> 
+We would like to also have also a score which shows the goodness-of-fit of the model for each country, however according to the [@BurnhamKenneth2002 pp. 80], it is mentioned that **AIC cannot** be used for models with different number of observations (and also different datasets) as we see in the table below.
+
+```{r}
+#Number of observations of countries once they have entered the epidemic phase of the virus
+country_nested %>%
+  unnest(data) %>%
+  group_by(country) %>%
+  summarize(observations = n()) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped") %>%
+  add_header_above(c("Number of observations per country", "")) %>%
+  scroll_box(width = "100%", height = "250px")
+```
+
+
+## Fitted parameters and long-term predictions
+
+We then describe the fitted parameters (i.e., the final size and the infection rates), both on a per-country basis and some aggregate numbers (e.g., total size of the epidemic over all considered countries).
+Furthermore, we study the evolution (say for $t$ from 0 to 50) of the predictions of the number of confirmed cases from our models.
+Similarly as was discussed in the last sub-section of the exploratory data analysis, the number of confirmed cases per 100,000 habitants is also important to understand how specific countries are managing the spread of the epidemic.
+Thus, we predict the evolution of this number (i.e., by dividing our predictions for confirmed cases by the population size) and discuss.
+
+We will do the aforementioned using the following functions:
+
+* Format the fitted parameters using `broom::tidy()`.
+* For the long-term predictions, we use `data = data.frame(t = 0:50)` in `add_predictions()`.
+
+First we can see the parameters of the various models for each countries. 
+```{r}
+#Parameters of model per country
+country_tidy <-
+  country_nested %>%
+  mutate(tidy = purrr::map(model, broom::tidy)) %>%
+  unnest(tidy)
+
+country_tidy %>%
+  select(country, term, estimate) %>%
+  pivot_wider(names_from = term, values_from =  estimate) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped") %>%  add_header_above(c("Fitted parameter per Country", "", "")) %>%
+  scroll_box(width = "100%", height = "250px") 
+```
+*Note:* Please do note that we have rounded our results to 2 decimal places. </p>
+
+**Comment**: It doesn't come as a surprise the fact that they vary quite a lot. 
+</p> 
+
+Now let's look at the prediction per country.
+
+```{r, fig.asp=1.2}
+# Prediction for each individually
+country_nested_pred <-
+  country_nested %>% mutate(prediction = purrr::map(model, add_predictions, data = data.frame(t = 0:75)))
+
+# PLOT: Individual country predictions
+country_nested_pred %>%
+  unnest(cols = prediction) %>%
+  group_by(country) %>%
+  arrange(desc(pred)) %>%
+  # filter(country == c("France", "Germany", "Italy", "Spain", "USA")) %>%
+  ggplot(aes(t, pred)) +
+  geom_line(aes(col = country), size = 0.5) +
+  facet_wrap(~ fct_reorder(country, pred), scales = "free") +
+  theme_light() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, size = 6),
+    axis.text.y = element_text(size = 6)
+  ) +
+  scale_y_continuous(label = comma) +
+  labs(
+    title = str_wrap(
+      "Individual Country Predictions per Day Since Entering in Epidemic Phase with Adjusted Scale per Country"
+    ),
+    x = "t",
+    y = "Predictions"
+  ) +
+  theme(plot.title = element_text(size = 10, hjust = 0.5))
+```
+**Comment**: We can see that the countries with the highest absolute values are the US, Spain, Germany, France and Italy (over a 100'000 of final confirmed cases predicted). This is in line with what we have found in the EDA part of our analysis.</p>
+
+In order to look at the aggregated sum, we can either use the logistic model on the filtered data and calculate new coefficients as we did with the swiss model but now applied to all countries and the second approach is to do it by region to use the fitted parameters of each country (nested) which makes more sense.
+
+
+```{r}
+# First we created a variable for all the nested countries where we only take the country, region and the prediction
+country_nested_overall <-
+  country_nested_pred %>%
+  unnest(data) %>%
+  select(country, region, prediction) %>%
+  unnest(prediction)
+
+# Secondly, we create a new variable for the sum of all countries and filter so that t is below 50.
+country_nested_final <-
+  country_nested_overall %>%
+  distinct() %>%
+  group_by(t) %>%
+  filter(t <= 50) %>%
+  summarise(total = sum(pred))
+
+# We apply the same kind of filter here
+country_nested_observation <-
+  covid19_data_filtered %>%
+  group_by(t) %>%
+  filter(t <= 50) %>%
+  summarize(obs = sum(confirmed))
+
+# PLOT: Overall long-term prediction
+ggplot(data = country_nested_final, aes(x = t, y = total)) +
+  geom_line(alpha = 1 / 3, aes(color = "Predictions")) +
+  # geom_smooth(se = FALSE, size = 0.5,col = "red") +
+  scale_y_continuous(label = comma) +
+  geom_line(data = country_nested_observation,
+            aes(t, obs, color = "Observations"),
+            linetype = 2) +
+  labs(
+    title = str_wrap(
+      "Prediction for Expansion of COVID-19 overall (using all nested models)"
+    ),
+    color = "",
+    x = "",
+    y = ""
+  ) +
+  theme(plot.title = element_text(size = 10, hjust = 0.5))
+```
+
+**Comment**: We can see that up to the 28th period the aggregated model predicts well however after that we do not have observations for most of the countries so it does not make sense to look at the observed values. </p>
+
+*Note*: Please do note that that the highest "t" belongs to China which is about 75 periods and therefore we have decided to extend our model to also include the all these dates. However, please do keep in mind that the 50th period the observation is mainly representative of predictions for China.
+</p> 
+We can also do the aggregated sum for all countries only for the first 50 periods (because afterwards we do not have observed data points for almost all countries hence the observations naturally goes down). This model is a better one because it takes into account all the different coefficients rather than assigning the same one to all the countries.
+
+*Note*: In the graph below, Please feel free to scroll over the country to see which one is contributing the most.
+
+```{r,out.height="50%"}
+regional_nested <- country_nested_overall %>%
+  group_by(region) %>%
+  arrange(desc(pred)) %>%
+  ggplot(aes(t, pred)) +
+  geom_line(aes(col = country), size = 0.5) +
+  facet_wrap(~ fct_reorder(region, pred), ncol = 2) +
+  theme_light() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90, size = 6)) +
+  scale_y_continuous(label = comma) +
+  labs(
+    title= "Regional Prediction of the Nested Models per Day since Entering the Epidemic Phase",
+    x = "t",
+    y = ""
+  ) +
+  theme(plot.title = element_text(
+    size = 10,
+    hjust = 0.5,
+    vjust = 0.5
+  ))
+
+ggplotly(regional_nested) %>%
+  config(displayModeBar = F)
+```
+
+**Comment**: In terms of regions, we see the highest increase for North America due to the predicted increase for the US, followed by Europe & Central Asia, Italy, Spain and France among many and lastly, East Asian & Pacific with the most predicted cases for China. </p>
+
+Furthermore, referring back to the per-country predictions, we can also calculate the same for cases per 100,000 habitants displayed by the interactive plot below.
+```{r, out.height="50%"}
+# In order to do we will do it in quick way where use our previous predictions, and divide them by the population and then unnest them confirmed cases per 100,000 inhabitants. This will be saved as another variable called "country_nested_1e5pop"
+country_nested_1e5pop <-
+  country_nested_pred %>%
+  unnest(data) %>%
+  select(country, population, prediction) %>%
+  unnest(prediction) %>%
+  mutate(pred = ((pred / population) * 100000))
+
+# PLOT: Individual country predictions adjusted for the population
+plot_1e5pop <- country_nested_1e5pop %>%
+  group_by(country) %>%
+  arrange(desc(pred)) %>%
+  ggplot(aes(t, pred, col = country)) +
+  geom_line() +
+  theme_light() +
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 10, hjust = 0.5),
+    axis.text.x = element_text(face = "bold"),
+    axis.text.y = element_text(face = "bold")
+  ) +
+  labs(
+    title = str_wrap(
+      "Prediction of cases per 100,000 habitants with Adjusted Scale per Country"
+    ),
+    x = "t",
+    y = "Predictions/100,000 habitants"
+  ) +
+  theme(plot.title = element_text(size = 10, hjust = 0.5))
+
+ggplotly(plot_1e5pop) %>%
+  config(displayModeBar = F)
+```
+
+**Comment**: We can see that Iceland (green line) and Luxembourg (blue line) will have the highest number of confirmed cases per 100,000 habitants which is same as what we saw previously in the section of exploratory data analysis. This is due to their small populations and their infection numbers will be far larger than the countries that follow like Spain, Switzerland Belgium.

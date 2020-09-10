@@ -1,0 +1,153 @@
+# Modeling the spread of COVID-19 in a single country
+
+## The logistic model in R
+
+Using the filtered dataset, we study the spread of COVID-19 with the logistic model.
+Letting $C_{i}(t) = C_{d_{0,i} + t,i}$, the model for country $i$ can be expressed as:
+
+\[
+  C_{i}(t) = \frac{K_{i} \cdot C_{i}(0)}{C_{i}(0) + (K_{i}-C_{i}(0)) \, \exp(-R_{i}\,t)}
+\]
+
+The goal is to find the final number of cases $K_{i}$ and the infection rate $R_{i}$. We implement this in R using the following function:
+
+```{r, echo = TRUE}
+# here, we assume that data is a data frame with two variables
+#  - t: the number of event days
+#  - confirmed: the number of confirmed cases at time t
+logistic_model <- function(data) {
+  data <- data %>% arrange(t)
+  C_0 <- data$confirmed[1]
+  C_max <- data$confirmed[nrow(data)]
+  nls(
+    formula = confirmed ~ K / (1 + ((K - C_0) / C_0) * exp(-R * t)),
+    data = data,
+    start = list(K = 2 * C_max, R = 0.5),
+    control = nls.control(minFactor = 1e-6, maxiter = 100)
+  )
+}
+```
+
+Notice:
+
+* We use the nonlinear least square method `stats::nls` to fit the unknown parameters.
+* In R, the formula above is `confirmed ~ K / (1 + ((K - C_0)/C_0) * exp(-R * t))`.
+* As starting point $(K_0, R_0)$ for the optimiser, we set $R_0 = 0.5$ and $K_0 = 2 \, C(t^*)$, where $t^*$ is the latest information about accumulated confirmed cases.
+* We further set the `control` argument as `nls.control(minFactor = 1e-6, maxiter = 100)`.
+
+## The logistic model applied to data from Switzerland
+
+From `covid19_data_filtered`, extract a table `covid19_ch` which corresponds to data for Switzerland.
+Then:
+
+* We use the function above to fit the logistic model for Switzerland
+* We describe its output (fitted parameters, `broom::tidy()` might be useful here)
+* We discuss the goodness-of-fit.
+* We plot the fitted curve, as well as observed data points. 
+* And finally, we present the predictions of the model. What is the estimated final size of the epidemic and infection rate in Switzerland?
+
+
+We will start by presenting the data we own for the model we want to describe. 
+
+```{r fit the logistic model}
+covid19_ch <- covid19_data_filtered %>%
+  filter(country == "Switzerland")
+
+CH_plt1 <- covid19_ch %>%
+  ggplot(aes(date, confirmed)) +
+  geom_line() +
+  theme_light() +
+  theme(plot.margin=unit(c(0,1,0,0),"cm"))+
+  ggtitle("Swiss Model Full data =")+
+  labs(x = "", y = "Confirmed Cases")
+
+fin_cases_CH <- logistic_model(covid19_ch)
+
+CH_plt2 <- covid19_ch %>%
+  add_predictions(fin_cases_CH) %>%
+  ggplot(aes(date, pred)) +
+  geom_line() +
+  theme_light() +
+  theme(plot.margin=unit(c(0,0.5,0,0),"cm"))+
+  ggtitle("Swiss Model Trend + ") +
+  labs(x = "", y = "Predictions")
+
+CH_plt3 <- covid19_ch %>%
+  add_residuals(fin_cases_CH) %>%
+  ggplot(aes(date, resid)) +
+  geom_hline(yintercept = 0,
+             colour = "blue",
+             size = 1) +
+  geom_line() +
+  theme_light() +
+  theme(plot.margin=unit(c(0,0.5,0,0),"cm"))+
+  ggtitle("Swiss Model Remaining Pattern") +
+  labs(x = "", y = "Residuals")
+
+CH_plt1 + (CH_plt2 / CH_plt3)
+```
+
+**Comment**: In general we can see that there is an increasing trend for the confirmed cases of COVID-19 in Switzerland (which does not come as a surprise). The trend seems to follow quite well the pace of the observations, and the residuals seems to focus around zero, with some variation, especially towards the end of March.
+
+```{r Describe output}
+broom::tidy(fin_cases_CH) %>%  
+  kable() %>% 
+  kable_styling(bootstrap_options = "striped")
+```
+
+**Comment**: we can see that the two parameters found are both statistically significant and both positively correlated to the independent variable. 
+
+Now, we will discuss the goodness of fit of the model by comparing it to a null model having the confirmed case explained by a constant variable. 
+
+```{r Discuss the goodness-of-fit}
+null_model <- glm(confirmed ~ 1, data = covid19_ch)
+summary(null_model)
+anova(fin_cases_CH, null_model)
+
+predictCH <- predict(fin_cases_CH, newdata = covid19_ch)
+errCH <- predictCH - covid19_ch$confirmed
+mape.ch <- mean(abs(errCH / covid19_ch$confirmed))
+```
+**Comment**: 
+The ANOVA results shows that the hypothesis that the two models have the same effect can be reject are 0.1% (since the p-value is lower than 0.001). Moreover, we also calulate the MAPE to measure the accuracy of the prediction of the model. Having a MAPE of `r mape.ch`, we can say that the model is fairly good, being the error small. 
+</p>
+We then plot the fitted curve and the observations. 
+
+```{r Plot the fitted curve, as well as observed data points}
+covid19_ch %>%
+  modelr::data_grid(date) %>%
+  add_predictions(fin_cases_CH) %>%
+  ggplot() +
+  geom_line(aes(date, pred, col = "red"), linetype = "dashed") +
+  geom_point(data = covid19_ch, aes(date, confirmed), size = 0.5) +
+  theme_light() +
+  labs(
+    title = "Model of the spread of COVID-19 in Switzerland",
+    color = "",
+    x = "",
+    y = "Confirmed Cases of COVID-19"
+  ) +
+  scale_color_discrete(labels = "Predictions") +
+  theme(legend.position = "bottom") +
+  scale_y_continuous(label = comma) +
+  theme(plot.title = element_text(size = 10, hjust = 0.5),plot.margin=unit(c(0,0.5,0,0),"cm"))
+```
+
+**Comment**: As we can see the predictions are following quite well the observations, meaning that the model is working quite well. However, it is woth mentioning that the model is fitted on the whole datasets, which could lead to some form of overfitting, not having a separation in training and test set, meaning that once dealing with new data, the prediction ability of the model could decrease quite a lot. 
+
+```{r Present the predictions of the model, warning=FALSE}
+covid19_ch %<>%
+  add_residuals(fin_cases_CH)
+
+ggplot(covid19_ch, aes(date, resid)) +
+  geom_ref_line(h = 0, size = 1, col = "blue") +
+  geom_point(size = 1) +
+  labs(x = "", y = "Residuals", title = "Residulas per Day of logistic_model") +
+  theme_light() +
+  theme(plot.title = element_text(size = 10, hjust = 0.5),plot.margin=unit(c(0,0.5,0,0),"cm"))
+```
+
+The residuals from the plot tell us that many actual numbers were lower than the predicted ones, however this is not too far off from zero, and it is rather expected that the model overpredicts at this point; the number of cases to be higher as the confirmed does not mean that all the people have been identified and due to the limitations in number of testing kits, perhaps more are infected than our data shows.</p>
+</p>
+Eventually, the prediction the estimated final size of the epidemic and infection rate in Switzerland is `r predictCH[26]`.
+
