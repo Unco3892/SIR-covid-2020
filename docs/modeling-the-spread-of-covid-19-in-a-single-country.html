@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>3 Modeling the spread of COVID-19 in a single country | The spread of COVID-19</title>
-  <meta name="description" content="3 Modeling the spread of COVID-19 in a single country | The spread of COVID-19" />
+  <title>3 Modeling the spread of COVID-19 in a single country | The Spread of COVID-19</title>
+  <meta name="description" content="3 Modeling the spread of COVID-19 in a single country | The Spread of COVID-19" />
   <meta name="generator" content="bookdown 0.20.5 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="3 Modeling the spread of COVID-19 in a single country | The spread of COVID-19" />
+  <meta property="og:title" content="3 Modeling the spread of COVID-19 in a single country | The Spread of COVID-19" />
   <meta property="og:type" content="book" />
   
   
@@ -16,12 +16,12 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="3 Modeling the spread of COVID-19 in a single country | The spread of COVID-19" />
+  <meta name="twitter:title" content="3 Modeling the spread of COVID-19 in a single country | The Spread of COVID-19" />
   
   
   
 
-<meta name="author" content="Rollini, Maura and Azizi, Ilia" />
+<meta name="author" content="Azizi, Ilia and Rollini, Maura" />
 
 
 
@@ -166,7 +166,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">The spread of COVID-19</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">The Spread of COVID-19</a>
           </h1>
         </div>
 
@@ -218,7 +218,7 @@ Then:</p>
 <li>And finally, we present the predictions of the model. What is the estimated final size of the epidemic and infection rate in Switzerland?</li>
 </ul>
 <p>We will start by presenting the data we own for the model we want to describe.</p>
-<p><img src="SIR-covid-2020_files/figure-html/fit%20the%20logistic%20model-1.png" width="90%" style="display: block; margin: auto;" /></p>
+<p><img src="SIR-covid-2020_files/figure-html/fit the logistic model-1.png" width="90%" style="display: block; margin: auto;" /></p>
 <p><strong>Comment</strong>: In general we can see that there is an increasing trend for the confirmed cases of COVID-19 in Switzerland (which does not come as a surprise). The trend seems to follow quite well the pace of the observations, and the residuals seems to focus around zero, with some variation, especially towards the end of March.</p>
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
 <thead>
@@ -313,13 +313,13 @@ R
 The ANOVA results shows that the hypothesis that the two models have the same effect can be reject are 0.1% (since the p-value is lower than 0.001). Moreover, we also calulate the MAPE to measure the accuracy of the prediction of the model. Having a MAPE of 0.08, we can say that the model is fairly good, being the error small.
 </p>
 <p>We then plot the fitted curve and the observations.</p>
-<p><img src="SIR-covid-2020_files/figure-html/Plot%20the%20fitted%20curve,%20as%20well%20as%20observed%20data%20points-1.png" width="90%" style="display: block; margin: auto;" /></p>
+<p><img src="SIR-covid-2020_files/figure-html/Plot the fitted curve, as well as observed data points-1.png" width="90%" style="display: block; margin: auto;" /></p>
 <p><strong>Comment</strong>: As we can see the predictions are following quite well the observations, meaning that the model is working quite well. However, it is woth mentioning that the model is fitted on the whole datasets, which could lead to some form of overfitting, not having a separation in training and test set, meaning that once dealing with new data, the prediction ability of the model could decrease quite a lot.</p>
-<p><img src="SIR-covid-2020_files/figure-html/Present%20the%20predictions%20of%20the%20model-1.png" width="90%" style="display: block; margin: auto;" /></p>
+<p><img src="SIR-covid-2020_files/figure-html/Present the predictions of the model-1.png" width="90%" style="display: block; margin: auto;" /></p>
 The residuals from the plot tell us that many actual numbers were lower than the predicted ones, however this is not too far off from zero, and it is rather expected that the model overpredicts at this point; the number of cases to be higher as the confirmed does not mean that all the people have been identified and due to the limitations in number of testing kits, perhaps more are infected than our data shows.
 </p>
 </p>
-<p>Eventually, the prediction the estimated final size of the epidemic and infection rate in Switzerland is 20400.238.</p>
+<p>Eventually, the prediction the estimated final size of the epidemic and infection rate in Switzerland is 2.0410^{4}.</p>
 
 </div>
 </div>
