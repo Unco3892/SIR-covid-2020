@@ -111,7 +111,7 @@ data from the world bank with demographic information.
 More specifically, we use daily records of total confirmed infection cases (or cumulative number of cases), total number of fatalities (or cumulative number of deaths) per country starting from `r min(covid19_data$date)` until `r max(covid19_data$date)`. 
 The dataset, downloaded on `r latest_data`, contains `r format(nrow(covid19_data), big.mark = ",")` observations and `r ncol(covid19_data)` variables (`r names(covid19_data)`).
 
-**Special credits**: This project has been developed as part of the [dsfba course](https://tvatter.github.io/dsfba_2020/) and many thanks to professor [Thibault Vatter] (https://tvatter.github.io/) and his assistants for their contributions.
+**Special credits**: This project has been developed as part of the [dsfba course](https://tvatter.github.io/dsfba_2020/) and many thanks to professor [Thibault Vatter](https://tvatter.github.io/) and his assistants for their contributions.
 
 Furthermore, the repository for this project can be found [here.](https://github.com/Unco3892/SIR-covid-2020)
 <!-- Further, we have access to world bank data with `r nrow(worldbank_data)` rows and `r ncol(worldbank_data)` columns (`r names(worldbank_data)`) with demographic information per country. -->
