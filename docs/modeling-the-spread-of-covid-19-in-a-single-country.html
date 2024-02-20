@@ -6,11 +6,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>3 Modeling the spread of COVID-19 in a single country | The Spread of COVID-19</title>
   <meta name="description" content="3 Modeling the spread of COVID-19 in a single country | The Spread of COVID-19" />
-  <meta name="generator" content="bookdown 0.20.5 and GitBook 2.6.7" />
+  <meta name="generator" content="bookdown 0.37 and GitBook 2.6.7" />
 
   <meta property="og:title" content="3 Modeling the spread of COVID-19 in a single country | The Spread of COVID-19" />
   <meta property="og:type" content="book" />
-  
   
   
   
@@ -32,7 +31,8 @@
   
 <link rel="prev" href="exploratory-data-analysis.html"/>
 <link rel="next" href="modeling-the-spread-of-covid-19-worldwide.html"/>
-<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
@@ -48,32 +48,33 @@
 
 
 
-
-<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
-<script src="libs/htmlwidgets-1.5.1/htmlwidgets.js"></script>
-<script src="libs/plotly-binding-4.9.2.1/plotly.js"></script>
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.10.4/plotly.js"></script>
 <script src="libs/typedarray-0.1/typedarray.min.js"></script>
-<link href="libs/crosstalk-1.1.0.1/css/crosstalk.css" rel="stylesheet" />
-<script src="libs/crosstalk-1.1.0.1/js/crosstalk.min.js"></script>
-<link href="libs/plotly-htmlwidgets-css-1.52.2/plotly-htmlwidgets.css" rel="stylesheet" />
-<script src="libs/plotly-main-1.52.2/plotly-latest.min.js"></script>
+<link href="libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
 <script src="libs/kePrint-0.0.1/kePrint.js"></script>
 <link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
 
 
 <style type="text/css">
-code.sourceCode > span { display: inline-block; line-height: 1.25; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-code.sourceCode > span:empty { height: 1.2em; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -93,13 +94,13 @@ pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-le
 div.sourceCode
   {   }
 @media screen {
-code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code span.at { color: #7d9029; } /* Attribute */
 code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
+code span.bu { color: #008000; } /* BuiltIn */
 code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
 code span.ch { color: #4070a0; } /* Char */
 code span.cn { color: #880000; } /* Constant */
@@ -112,7 +113,7 @@ code span.er { color: #ff0000; font-weight: bold; } /* Error */
 code span.ex { } /* Extension */
 code span.fl { color: #40a070; } /* Float */
 code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
+code span.im { color: #008000; font-weight: bold; } /* Import */
 code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
 code span.kw { color: #007020; font-weight: bold; } /* Keyword */
 code span.op { color: #666666; } /* Operator */
@@ -124,6 +125,33 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+<style type="text/css">
+/* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}
 </style>
 
 </head>
@@ -138,21 +166,25 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
       <nav role="navigation">
 
 <ul class="summary">
-<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
 <li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#the-data"><i class="fa fa-check"></i><b>1.1</b> The data</a></li>
 <li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#a-note-on-epidemiological-models"><i class="fa fa-check"></i><b>1.2</b> A note on Epidemiological Models</a></li>
 <li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#this-project"><i class="fa fa-check"></i><b>1.3</b> This project</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2</b> Exploratory data analysis</a><ul>
+<li class="chapter" data-level="2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html"><i class="fa fa-check"></i><b>2</b> Exploratory data analysis</a>
+<ul>
 <li class="chapter" data-level="2.1" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#description-of-the-state-of-the-spread"><i class="fa fa-check"></i><b>2.1</b> Description of the state of the spread</a></li>
 <li class="chapter" data-level="2.2" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#worldwide-map"><i class="fa fa-check"></i><b>2.2</b> Worldwide map</a></li>
 <li class="chapter" data-level="2.3" data-path="exploratory-data-analysis.html"><a href="exploratory-data-analysis.html#data-selection-and-alignment"><i class="fa fa-check"></i><b>2.3</b> Data selection and alignment</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="modeling-the-spread-of-covid-19-in-a-single-country.html"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html"><i class="fa fa-check"></i><b>3</b> Modeling the spread of COVID-19 in a single country</a><ul>
+<li class="chapter" data-level="3" data-path="modeling-the-spread-of-covid-19-in-a-single-country.html"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html"><i class="fa fa-check"></i><b>3</b> Modeling the spread of COVID-19 in a single country</a>
+<ul>
 <li class="chapter" data-level="3.1" data-path="modeling-the-spread-of-covid-19-in-a-single-country.html"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#the-logistic-model-in-r"><i class="fa fa-check"></i><b>3.1</b> The logistic model in R</a></li>
 <li class="chapter" data-level="3.2" data-path="modeling-the-spread-of-covid-19-in-a-single-country.html"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#the-logistic-model-applied-to-data-from-switzerland"><i class="fa fa-check"></i><b>3.2</b> The logistic model applied to data from Switzerland</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="modeling-the-spread-of-covid-19-worldwide.html"><a href="modeling-the-spread-of-covid-19-worldwide.html"><i class="fa fa-check"></i><b>4</b> Modeling the spread of COVID-19 worldwide</a><ul>
+<li class="chapter" data-level="4" data-path="modeling-the-spread-of-covid-19-worldwide.html"><a href="modeling-the-spread-of-covid-19-worldwide.html"><i class="fa fa-check"></i><b>4</b> Modeling the spread of COVID-19 worldwide</a>
+<ul>
 <li class="chapter" data-level="4.1" data-path="modeling-the-spread-of-covid-19-worldwide.html"><a href="modeling-the-spread-of-covid-19-worldwide.html#fitting-the-logistic-model-to-every-country"><i class="fa fa-check"></i><b>4.1</b> Fitting the logistic model to every country</a></li>
 <li class="chapter" data-level="4.2" data-path="modeling-the-spread-of-covid-19-worldwide.html"><a href="modeling-the-spread-of-covid-19-worldwide.html#fitted-parameters-and-long-term-predictions"><i class="fa fa-check"></i><b>4.2</b> Fitted parameters and long-term predictions</a></li>
 </ul></li>
@@ -174,30 +206,30 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="modeling-the-spread-of-covid-19-in-a-single-country" class="section level1">
-<h1><span class="header-section-number">3</span> Modeling the spread of COVID-19 in a single country</h1>
-<div id="the-logistic-model-in-r" class="section level2">
-<h2><span class="header-section-number">3.1</span> The logistic model in R</h2>
+<div id="modeling-the-spread-of-covid-19-in-a-single-country" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">3</span> Modeling the spread of COVID-19 in a single country<a href="modeling-the-spread-of-covid-19-in-a-single-country.html#modeling-the-spread-of-covid-19-in-a-single-country" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="the-logistic-model-in-r" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> The logistic model in R<a href="modeling-the-spread-of-covid-19-in-a-single-country.html#the-logistic-model-in-r" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>Using the filtered dataset, we study the spread of COVID-19 with the logistic model.
 Letting <span class="math inline">\(C_{i}(t) = C_{d_{0,i} + t,i}\)</span>, the model for country <span class="math inline">\(i\)</span> can be expressed as:</p>
 <p><span class="math display">\[
   C_{i}(t) = \frac{K_{i} \cdot C_{i}(0)}{C_{i}(0) + (K_{i}-C_{i}(0)) \, \exp(-R_{i}\,t)}
 \]</span></p>
 <p>The goal is to find the final number of cases <span class="math inline">\(K_{i}\)</span> and the infection rate <span class="math inline">\(R_{i}\)</span>. We implement this in R using the following function:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-1"></a><span class="co"># here, we assume that data is a data frame with two variables</span></span>
-<span id="cb1-2"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-2"></a><span class="co">#  - t: the number of event days</span></span>
-<span id="cb1-3"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-3"></a><span class="co">#  - confirmed: the number of confirmed cases at time t</span></span>
-<span id="cb1-4"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-4"></a>logistic_model &lt;-<span class="st"> </span><span class="cf">function</span>(data) {</span>
-<span id="cb1-5"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-5"></a>  data &lt;-<span class="st"> </span>data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">arrange</span>(t)</span>
-<span id="cb1-6"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-6"></a>  C_<span class="dv">0</span> &lt;-<span class="st"> </span>data<span class="op">$</span>confirmed[<span class="dv">1</span>]</span>
-<span id="cb1-7"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-7"></a>  C_max &lt;-<span class="st"> </span>data<span class="op">$</span>confirmed[<span class="kw">nrow</span>(data)]</span>
-<span id="cb1-8"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-8"></a>  <span class="kw">nls</span>(</span>
-<span id="cb1-9"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-9"></a>    <span class="dt">formula =</span> confirmed <span class="op">~</span><span class="st"> </span>K <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span>((K <span class="op">-</span><span class="st"> </span>C_<span class="dv">0</span>) <span class="op">/</span><span class="st"> </span>C_<span class="dv">0</span>) <span class="op">*</span><span class="st"> </span><span class="kw">exp</span>(<span class="op">-</span>R <span class="op">*</span><span class="st"> </span>t)),</span>
-<span id="cb1-10"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-10"></a>    <span class="dt">data =</span> data,</span>
-<span id="cb1-11"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-11"></a>    <span class="dt">start =</span> <span class="kw">list</span>(<span class="dt">K =</span> <span class="dv">2</span> <span class="op">*</span><span class="st"> </span>C_max, <span class="dt">R =</span> <span class="fl">0.5</span>),</span>
-<span id="cb1-12"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-12"></a>    <span class="dt">control =</span> <span class="kw">nls.control</span>(<span class="dt">minFactor =</span> <span class="fl">1e-6</span>, <span class="dt">maxiter =</span> <span class="dv">100</span>)</span>
-<span id="cb1-13"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-13"></a>  )</span>
-<span id="cb1-14"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb1-14"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-1" tabindex="-1"></a><span class="co"># here, we assume that data is a data frame with two variables</span></span>
+<span id="cb2-2"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-2" tabindex="-1"></a><span class="co">#  - t: the number of event days</span></span>
+<span id="cb2-3"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-3" tabindex="-1"></a><span class="co">#  - confirmed: the number of confirmed cases at time t</span></span>
+<span id="cb2-4"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-4" tabindex="-1"></a>logistic_model <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb2-5"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-5" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(t)</span>
+<span id="cb2-6"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-6" tabindex="-1"></a>  C_0 <span class="ot">&lt;-</span> data<span class="sc">$</span>confirmed[<span class="dv">1</span>]</span>
+<span id="cb2-7"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-7" tabindex="-1"></a>  C_max <span class="ot">&lt;-</span> data<span class="sc">$</span>confirmed[<span class="fu">nrow</span>(data)]</span>
+<span id="cb2-8"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-8" tabindex="-1"></a>  <span class="fu">nls</span>(</span>
+<span id="cb2-9"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-9" tabindex="-1"></a>    <span class="at">formula =</span> confirmed <span class="sc">~</span> K <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> ((K <span class="sc">-</span> C_0) <span class="sc">/</span> C_0) <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>R <span class="sc">*</span> t)),</span>
+<span id="cb2-10"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-10" tabindex="-1"></a>    <span class="at">data =</span> data,</span>
+<span id="cb2-11"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-11" tabindex="-1"></a>    <span class="at">start =</span> <span class="fu">list</span>(<span class="at">K =</span> <span class="dv">2</span> <span class="sc">*</span> C_max, <span class="at">R =</span> <span class="fl">0.5</span>),</span>
+<span id="cb2-12"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-12" tabindex="-1"></a>    <span class="at">control =</span> <span class="fu">nls.control</span>(<span class="at">minFactor =</span> <span class="fl">1e-6</span>, <span class="at">maxiter =</span> <span class="dv">100</span>)</span>
+<span id="cb2-13"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-13" tabindex="-1"></a>  )</span>
+<span id="cb2-14"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-14" tabindex="-1"></a>}</span></code></pre></div>
 <p>Notice:</p>
 <ul>
 <li>We use the nonlinear least square method <code>stats::nls</code> to fit the unknown parameters.</li>
@@ -206,8 +238,8 @@ Letting <span class="math inline">\(C_{i}(t) = C_{d_{0,i} + t,i}\)</span>, the m
 <li>We further set the <code>control</code> argument as <code>nls.control(minFactor = 1e-6, maxiter = 100)</code>.</li>
 </ul>
 </div>
-<div id="the-logistic-model-applied-to-data-from-switzerland" class="section level2">
-<h2><span class="header-section-number">3.2</span> The logistic model applied to data from Switzerland</h2>
+<div id="the-logistic-model-applied-to-data-from-switzerland" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> The logistic model applied to data from Switzerland<a href="modeling-the-spread-of-covid-19-in-a-single-country.html#the-logistic-model-applied-to-data-from-switzerland" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>From <code>covid19_data_filtered</code>, extract a table <code>covid19_ch</code> which corresponds to data for Switzerland.
 Then:</p>
 <ul>
@@ -283,10 +315,6 @@ R
 #&gt; Call:
 #&gt; glm(formula = confirmed ~ 1, data = covid19_ch)
 #&gt; 
-#&gt; Deviance Residuals: 
-#&gt;    Min      1Q  Median      3Q     Max  
-#&gt;  -8998   -6868    -314    5999   11450  
-#&gt; 
 #&gt; Coefficients:
 #&gt;             Estimate Std. Error t value   Pr(&gt;|t|)    
 #&gt; (Intercept)     9650       1370    7.04 0.00000022 ***
@@ -333,7 +361,6 @@ The residuals from the plot tell us that many actual numbers were lower than the
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
-<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
 <script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
@@ -352,6 +379,7 @@ gitbook.start({
 "weibo": false,
 "instapaper": false,
 "vk": false,
+"whatsapp": false,
 "all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
 },
 "fontsettings": {
@@ -371,7 +399,11 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": null,
+"download": ["SIR-covid-2020.pdf", "SIR-covid-2020.epub"],
+"search": {
+"engine": "fuse",
+"options": null
+},
 "toc": {
 "collapse": "subsection"
 }
@@ -385,7 +417,7 @@ gitbook.start({
     var script = document.createElement("script");
     script.type = "text/javascript";
     var src = "true";
-    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (src === "" || src === "true") src = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/latest.js?config=TeX-MML-AM_CHTML";
     if (location.protocol !== "file:")
       if (/^https?:/.test(src))
         src = src.replace(/^https?:/, '');

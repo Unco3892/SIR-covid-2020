@@ -51,11 +51,11 @@
 <link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
-<script src="libs/htmlwidgets-1.6.1/htmlwidgets.js"></script>
-<script src="libs/plotly-binding-4.10.2/plotly.js"></script>
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/plotly-binding-4.10.4/plotly.js"></script>
 <script src="libs/typedarray-0.1/typedarray.min.js"></script>
-<link href="libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
-<script src="libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+<link href="libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
 <link href="libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
 <script src="libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
 <script src="libs/kePrint-0.0.1/kePrint.js"></script>
@@ -315,10 +315,6 @@ R
 #&gt; Call:
 #&gt; glm(formula = confirmed ~ 1, data = covid19_ch)
 #&gt; 
-#&gt; Deviance Residuals: 
-#&gt;    Min      1Q  Median      3Q     Max  
-#&gt;  -8998   -6868    -314    5999   11450  
-#&gt; 
 #&gt; Coefficients:
 #&gt;             Estimate Std. Error t value   Pr(&gt;|t|)    
 #&gt; (Intercept)     9650       1370    7.04 0.00000022 ***
@@ -351,7 +347,7 @@ The ANOVA results shows that the hypothesis that the two models have the same ef
 The residuals from the plot tell us that many actual numbers were lower than the predicted ones, however this is not too far off from zero, and it is rather expected that the model overpredicts at this point; the number of cases to be higher as the confirmed does not mean that all the people have been identified and due to the limitations in number of testing kits, perhaps more are infected than our data shows.
 </p>
 </p>
-<p>Eventually, the prediction the estimated final size of the epidemic and infection rate in Switzerland is 2.04^{4}.</p>
+<p>Eventually, the prediction the estimated final size of the epidemic and infection rate in Switzerland is 20400.238.</p>
 
 </div>
 </div>
