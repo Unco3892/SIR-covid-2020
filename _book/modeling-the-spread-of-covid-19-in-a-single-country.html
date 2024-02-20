@@ -216,20 +216,20 @@ Letting <span class="math inline">\(C_{i}(t) = C_{d_{0,i} + t,i}\)</span>, the m
   C_{i}(t) = \frac{K_{i} \cdot C_{i}(0)}{C_{i}(0) + (K_{i}-C_{i}(0)) \, \exp(-R_{i}\,t)}
 \]</span></p>
 <p>The goal is to find the final number of cases <span class="math inline">\(K_{i}\)</span> and the infection rate <span class="math inline">\(R_{i}\)</span>. We implement this in R using the following function:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># here, we assume that data is a data frame with two variables</span></span>
-<span id="cb2-2"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  - t: the number of event days</span></span>
-<span id="cb2-3"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#  - confirmed: the number of confirmed cases at time t</span></span>
-<span id="cb2-4"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-4" aria-hidden="true" tabindex="-1"></a>logistic_model <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
-<span id="cb2-5"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-5" aria-hidden="true" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(t)</span>
-<span id="cb2-6"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-6" aria-hidden="true" tabindex="-1"></a>  C_0 <span class="ot">&lt;-</span> data<span class="sc">$</span>confirmed[<span class="dv">1</span>]</span>
-<span id="cb2-7"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-7" aria-hidden="true" tabindex="-1"></a>  C_max <span class="ot">&lt;-</span> data<span class="sc">$</span>confirmed[<span class="fu">nrow</span>(data)]</span>
-<span id="cb2-8"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nls</span>(</span>
-<span id="cb2-9"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> confirmed <span class="sc">~</span> K <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> ((K <span class="sc">-</span> C_0) <span class="sc">/</span> C_0) <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>R <span class="sc">*</span> t)),</span>
-<span id="cb2-10"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> data,</span>
-<span id="cb2-11"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">start =</span> <span class="fu">list</span>(<span class="at">K =</span> <span class="dv">2</span> <span class="sc">*</span> C_max, <span class="at">R =</span> <span class="fl">0.5</span>),</span>
-<span id="cb2-12"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">control =</span> <span class="fu">nls.control</span>(<span class="at">minFactor =</span> <span class="fl">1e-6</span>, <span class="at">maxiter =</span> <span class="dv">100</span>)</span>
-<span id="cb2-13"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-13" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb2-14"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-1" tabindex="-1"></a><span class="co"># here, we assume that data is a data frame with two variables</span></span>
+<span id="cb2-2"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-2" tabindex="-1"></a><span class="co">#  - t: the number of event days</span></span>
+<span id="cb2-3"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-3" tabindex="-1"></a><span class="co">#  - confirmed: the number of confirmed cases at time t</span></span>
+<span id="cb2-4"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-4" tabindex="-1"></a>logistic_model <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb2-5"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-5" tabindex="-1"></a>  data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(t)</span>
+<span id="cb2-6"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-6" tabindex="-1"></a>  C_0 <span class="ot">&lt;-</span> data<span class="sc">$</span>confirmed[<span class="dv">1</span>]</span>
+<span id="cb2-7"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-7" tabindex="-1"></a>  C_max <span class="ot">&lt;-</span> data<span class="sc">$</span>confirmed[<span class="fu">nrow</span>(data)]</span>
+<span id="cb2-8"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-8" tabindex="-1"></a>  <span class="fu">nls</span>(</span>
+<span id="cb2-9"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-9" tabindex="-1"></a>    <span class="at">formula =</span> confirmed <span class="sc">~</span> K <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> ((K <span class="sc">-</span> C_0) <span class="sc">/</span> C_0) <span class="sc">*</span> <span class="fu">exp</span>(<span class="sc">-</span>R <span class="sc">*</span> t)),</span>
+<span id="cb2-10"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-10" tabindex="-1"></a>    <span class="at">data =</span> data,</span>
+<span id="cb2-11"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-11" tabindex="-1"></a>    <span class="at">start =</span> <span class="fu">list</span>(<span class="at">K =</span> <span class="dv">2</span> <span class="sc">*</span> C_max, <span class="at">R =</span> <span class="fl">0.5</span>),</span>
+<span id="cb2-12"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-12" tabindex="-1"></a>    <span class="at">control =</span> <span class="fu">nls.control</span>(<span class="at">minFactor =</span> <span class="fl">1e-6</span>, <span class="at">maxiter =</span> <span class="dv">100</span>)</span>
+<span id="cb2-13"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-13" tabindex="-1"></a>  )</span>
+<span id="cb2-14"><a href="modeling-the-spread-of-covid-19-in-a-single-country.html#cb2-14" tabindex="-1"></a>}</span></code></pre></div>
 <p>Notice:</p>
 <ul>
 <li>We use the nonlinear least square method <code>stats::nls</code> to fit the unknown parameters.</li>
@@ -351,7 +351,7 @@ The ANOVA results shows that the hypothesis that the two models have the same ef
 The residuals from the plot tell us that many actual numbers were lower than the predicted ones, however this is not too far off from zero, and it is rather expected that the model overpredicts at this point; the number of cases to be higher as the confirmed does not mean that all the people have been identified and due to the limitations in number of testing kits, perhaps more are infected than our data shows.
 </p>
 </p>
-<p>Eventually, the prediction the estimated final size of the epidemic and infection rate in Switzerland is 20400.238.</p>
+<p>Eventually, the prediction the estimated final size of the epidemic and infection rate in Switzerland is 2.04^{4}.</p>
 
 </div>
 </div>
@@ -403,7 +403,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": null,
+"download": ["SIR-covid-2020.pdf", "SIR-covid-2020.epub"],
 "search": {
 "engine": "fuse",
 "options": null
